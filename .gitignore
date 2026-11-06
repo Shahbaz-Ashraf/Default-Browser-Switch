@@ -3,6 +3,7 @@
 *.pdb
 *.tmp
 *.log
+*.zip
 .vs/
 bin/
 obj/
@@ -11,3 +12,4 @@ obj/
 Thumbs.db
 Desktop.ini
 .DS_Store
+

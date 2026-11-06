@@ -11,32 +11,56 @@
 
 **Default Browser Switch** is an ultra-fast, zero-dependency utility engineered to switch default web browsers on Windows 10 and Windows 11 in **under 15 milliseconds**. It bypasses sluggish GUI automation, eliminates window flashing, and implements Microsoft’s cryptographic `UserChoice` hash algorithm directly in memory.
 
-[Features](#-key-features) • [Speed Benchmark](#-performance-benchmark) • [Quick Start](#-quick-start) • [BIOS Selector](#-interactive-bios-style-selector) • [CLI API](#-cli--scripting-reference) • [How It Works](#-technical-deep-dive)
+[Features](#-key-features) • [Instant Method (ms-settings)](#-the-fast-official-zero-reboot-way-ms-settingsdefaultapps) • [Performance Benchmark](#-performance-benchmark) • [Quick Start](#-quick-start) • [BIOS Selector](#-interactive-bios-style-selector) • [CLI API](#-cli--scripting-reference) • [UCPD & Error 1052 Deep Dive](#-understanding-ucpd-error-1052--side-effects)
 
 </div>
 
 ---
 
+## ⚡ The Fast, Official, Zero-Reboot Way: `ms-settings:defaultapps`
+
+If you want to switch your default browser **right now without rebooting your computer or modifying system drivers**, the fastest official method built into Windows is the **`ms-settings:defaultapps`** URI protocol.
+
+### Why It's the Better Zero-Reboot Way:
+1. **Zero Waiting**: Takes less than 3 seconds.
+2. **100% Compliant**: Works directly with Microsoft's kernel security policies without needing administrative elevation.
+3. **No Reboot Required**: Works immediately even if Microsoft's kernel driver (`ucpd.sys`) is running.
+
+### How to Use It:
+* **Option A**: Press `Win + R`, paste:
+  ```cmd
+  ms-settings:defaultapps
+  ```
+  and press **Enter**. Click **Web browser** and select your browser.
+* **Option B**: Double-click **`Open Windows Default Apps.cmd`** in this folder.
+* **Option C**: Run via terminal:
+  ```powershell
+  .\FastBrowserSwitch.exe settings
+  ```
+
+---
+
 ## 🚀 Key Features
 
-* **⚡ Sub-15ms Execution**: Switches `http`, `https`, `.html`, and `.htm` associations in milliseconds—no settings window popups, no lag.
+* **⚡ Sub-15ms Background Execution**: Switches `http`, `https`, `.html`, and `.htm` associations in pure memory—no settings window popups, no lag.
 * **📟 Retro BIOS-Style Selector**: Navigate installed browsers with arrow keys in a responsive, retro BIOS setup interface (`[↑]/[↓]`, `[Enter]`).
 * **🖱️ 1-Click Desktop Switchers**: Dedicated clickable `.cmd` launchers for each detected browser (`Switch to Google Chrome.cmd`, `Switch to Firefox.cmd`, etc.).
 * **🧠 Smart Validation**: Detects if the clicked browser is already default; if so, exits instantly without redundant registry writes.
 * **🔍 Auto-Discovery Bus**: Dynamically queries `StartMenuInternet` capabilities to detect all installed browsers (Chrome, Edge, Firefox, Brave, Opera, Vivaldi, Comet, Avast, etc.).
-* **🛡️ UCPD-Aware Engine**: Includes built-in mitigation for Microsoft's kernel-level User Choice Protection Driver (`ucpd.sys`).
+* **🛡️ UCPD-Aware Engine & Diagnostics**: Includes real-time detection (`FastBrowserSwitch.exe status`) for Microsoft's kernel-level User Choice Protection Driver (`ucpd.sys`).
 * **📦 100% Native & Portable**: Standalone executable (< 25 KB) built with native .NET runtime—zero external installers or runtimes required.
 
 ---
 
 ## 📊 Performance Benchmark
 
-| Method | Latency | UI Impact | Background Reliability |
-| :--- | :--- | :--- | :--- |
-| **⚡ Default Browser Switch (`FastBrowserSwitch.exe`)** | **~5 – 15 ms** | **Zero UI (Silent)** | **100% Reliable** |
-| Browser `--make-default-browser` Flag | ~800 – 2,000 ms | Spawns browser process | Inconsistent across builds |
-| PowerShell / VBScript UI Automation | ~2,500 – 4,500 ms | Flashes Windows Settings UI | Fragile (Breaks if focus changes) |
-| Manual Windows Settings Flow | ~8,000 – 15,000 ms | Full screen navigation | Manual interaction required |
+| Method | Latency | UI Impact | Background Reliability | Needs Reboot? |
+| :--- | :--- | :--- | :--- | :--- |
+| **⚡ FastBrowserSwitch (Native Engine)** | **~5 – 15 ms** | **Zero UI (Headless)** | **100% Reliable** | Once (to unload UCPD) |
+| **🚀 `ms-settings:defaultapps` Shortcut** | **~2,000 ms** | **Official Settings Window** | **100% Compliant** | **No Reboot Needed** |
+| Browser `--make-default-browser` Flag | ~800 – 2,000 ms | Spawns browser process | Inconsistent across builds | No |
+| PowerShell / VBScript UI Automation | ~2,500 – 4,500 ms | Flashes Windows Settings UI | Fragile (Breaks on focus loss) | No |
+| Manual Windows Settings Navigation | ~8,000 – 15,000 ms | Full screen navigation | Manual interaction required | No |
 
 ---
 
@@ -52,6 +76,7 @@ Default-Browser-Switch/
 │   └── Switch to Comet.cmd
 ├── 📟 BIOS-Browser-Selector.cmd        # 1-click launcher for the retro BIOS setup screen
 ├── 📟 BIOS-Browser-Selector.ps1        # PowerShell variant of the BIOS setup selector
+├── 🚀 Open Windows Default Apps.cmd    # 1-click instant shortcut to Windows Default Apps
 ├── 🔓 Unlock-FastSwitch.cmd            # 1-time admin script to disable Microsoft UCPD
 ├── ⚡ FastBrowserSwitch.exe             # High-speed compiled native C# binary
 ├── 📄 FastBrowserSwitch.cs             # Complete C# source with UserChoice cryptography
@@ -63,17 +88,7 @@ Default-Browser-Switch/
 
 ## ⚡ Quick Start
 
-### Option 1: Use 1-Click Desktop Launchers
-Navigate to the `Click to Switch Browsers/` directory and double-click the browser you want:
-* `Switch to Google Chrome.cmd`
-* `Switch to Mozilla Firefox.cmd`
-* `Switch to Microsoft Edge.cmd`
-
-> **Note**: If the chosen browser is already set as default, the script notifies you and exits immediately without making unnecessary changes.
-
----
-
-### Option 2: Interactive BIOS Setup Utility
+### 1. Interactive BIOS Setup Utility
 Double-click `BIOS-Browser-Selector.cmd` (or run `FastBrowserSwitch.exe` without parameters):
 
 ```text
@@ -103,6 +118,16 @@ Double-click `BIOS-Browser-Selector.cmd` (or run `FastBrowserSwitch.exe` without
 
 ---
 
+### 2. Clickable 1-Touch Files (`Click to Switch Browsers/`)
+Open the `Click to Switch Browsers/` directory and double-click any browser:
+* `Switch to Google Chrome.cmd`
+* `Switch to Mozilla Firefox.cmd`
+* `Switch to Microsoft Edge.cmd`
+
+> **Smart Check**: If the chosen browser is already default, the script notifies you immediately and exits with zero disk or registry writes.
+
+---
+
 ## 🛠️ CLI & Scripting Reference
 
 Integrate default browser switching into batch scripts, PowerShell pipelines, Stream Decks, or hotkey daemons (e.g., AutoHotkey):
@@ -113,54 +138,65 @@ Integrate default browser switching into batch scripts, PowerShell pipelines, St
 .\FastBrowserSwitch.exe switch "Mozilla Firefox"
 .\FastBrowserSwitch.exe switch "MSEdgeHTM"
 
-# 2. Query currently active default browser
+# 2. Check UCPD driver state and pending reboot status
+.\FastBrowserSwitch.exe status
+
+# 3. Query currently active default browser
 .\FastBrowserSwitch.exe current
 
-# 3. List all installed browsers and registered ProgIds
+# 4. List all installed browsers and registered ProgIds
 .\FastBrowserSwitch.exe list
 
-# 4. Automatically generate clickable desktop switchers for newly installed browsers
+# 5. Open official Windows Default Apps screen
+.\FastBrowserSwitch.exe settings
+
+# 6. Automatically generate clickable desktop switchers for newly installed browsers
 .\FastBrowserSwitch.exe generate-shortcuts
 ```
 
 ---
 
-## 🔬 Technical Deep Dive
+## 🔍 Understanding UCPD, Error 1052 & Side Effects
 
-### The Windows Anti-Tampering Challenge
-Starting in Windows 8 and reinforced throughout Windows 10 and 11, Microsoft secured user choice associations under:
+### 1. What is UCPD?
+In early 2024, Microsoft pushed update **KB5034204**, introducing `UCPD.sys` (**User Choice Protection Driver**). This kernel filter driver intercepts user-mode writes to `UserChoice` registry keys with `ACCESS_DENIED`. Its purpose is to stop third-party apps from changing defaults without going through Windows Settings.
+
+### 2. Why Did `ControlService FAILED 1052` Happen?
+When running `Unlock-FastSwitch.cmd`, you may have seen:
+```text
+[SC] ChangeServiceConfig SUCCESS
+[SC] ControlService FAILED 1052: The requested control is not valid for this service.
+```
+* **`ChangeServiceConfig SUCCESS`**: The command **successfully disabled UCPD** in the Windows Registry (`Start = 4`).
+* **`ControlService FAILED 1052`**: `ucpd.sys` is a low-level **kernel minifilter driver**. Microsoft built this driver without a dynamic live-unload routine. It **cannot be stopped from RAM while Windows is actively running**.
+* **Why a Reboot is Required**: Because Windows cannot unload running minifilters live, `ucpd.sys` stays in memory until you restart your PC. Once rebooted, `Start = 4` prevents Windows from ever loading it again, unlocking permanent 10ms switching.
+
+### 3. What Are the Side Effects of Disabling UCPD?
+* **System Stability & Updates**: **Zero negative impact.** Windows 10 operated without UCPD for 9 years (2015 to 2024). All Windows updates, drivers, and software function completely normally.
+* **Performance**: Zero penalty (frees minor kernel overhead).
+* **Security Consideration**: Rogue installers or adware won't be kernel-blocked from changing file associations silently (standard Windows Defender / antivirus will still protect you).
+* **Reversibility**: **100% reversible anytime**. To re-enable UCPD, run:
+  ```cmd
+  sc config ucpd start= auto
+  ```
+
+---
+
+## 🔬 Technical Deep Dive: The UserChoice Cryptography
+
+### The Anti-Tampering Mechanism
+Microsoft protects registry associations under:
 ```text
 HKCU\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice
 HKCU\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice
 ```
-If a script directly modifies `ProgId` without providing a cryptographically valid `Hash`, Windows Shell treats the change as tampering and displays:
-> *"An app default was reset — An app caused a problem with the default app setting..."*
-and resets the association back to Microsoft Edge.
+If a tool writes a new `ProgId` without the exact matching cryptographic `Hash`, Windows Shell detects tampering and resets the association to Microsoft Edge.
 
-### How `FastBrowserSwitch` Solves This
-`FastBrowserSwitch` performs the same cryptographic derivation originally reverse-engineered by security researchers and Mozilla's Firefox engineers:
-1. **Input Composition**: Concatenates target extension (`http`), User SID (`S-1-5-21-...`), Target ProgId (`ChromeHTML`), timestamp FileTime (quantized to 1-minute windows), and Microsoft's Shell32 experience salt.
-2. **Dual-Pass Transformation**: Computes an MD5 digest and applies a proprietary bitwise block cipher across 32-bit registers.
-3. **Registry Commitment**: Writes the resulting Base64 hash along with the `ProgId` to `UserChoice` and updates `ApplicationAssociationToasts`.
-4. **Shell Notification**: Calls native `SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH, 0, 0)` so that Windows Explorer and taskbar icons update instantaneously without restarting `explorer.exe`.
-
----
-
-## 🛡️ Unlocking Windows 10/11 Kernel Protection (UCPD)
-
-In early 2024, Microsoft pushed update **KB5034204**, introducing `UCPD.sys` (**User Choice Protection Driver**). This kernel filter driver intercepts user-mode writes to `UserChoice` registry keys with `ACCESS_DENIED`.
-
-To enable native, silent 10ms switching:
-1. Right-click **`Unlock-FastSwitch.cmd`** and select **"Run as Administrator"**.
-2. This stops the `ucpd` driver and disables its scheduled auto-start task:
-   ```cmd
-   sc config ucpd start= disabled
-   sc stop ucpd
-   schtasks /change /disable /tn "\Microsoft\Windows\AppxDeploymentClient\UCPD velocity"
-   ```
-3. Once completed, registry switching works permanently and instantaneously.
-
-*(If UCPD remains enabled, `FastBrowserSwitch` detects it and falls back to opening the Windows Default Apps page).*
+### How `FastBrowserSwitch` Solves This:
+1. **Input Vector**: Normalizes target protocol (`http`), User SID (`S-1-5-21-...`), ProgId (`ChromeHTML`), timestamp FileTime (quantized to 1-minute blocks), and the Microsoft Shell32 salt string.
+2. **Crypto Transformation**: Computes an MD5 digest and executes a proprietary bitwise block cipher across 32-bit registers.
+3. **Direct Registry Commitment**: Sets the calculated Base64 hash and updates `ApplicationAssociationToasts`.
+4. **Shell Cache Invalidation**: Calls native `SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSH, 0, 0)` so that Windows Explorer and taskbar icons refresh instantaneously without restarting `explorer.exe`.
 
 ---
 

@@ -64,9 +64,15 @@ namespace FastBrowserSwitch
                         Console.WriteLine(curr != null ? curr.DisplayName : "Unknown");
                         return;
                     }
-                    else if (command == "unlock")
+                    else if (command == "unlock" || command == "status" || command == "check")
                     {
                         CheckAndExplainUcpd();
+                        return;
+                    }
+                    else if (command == "settings" || command == "gui")
+                    {
+                        Console.WriteLine("[*] Opening Windows Default Apps settings dialog...");
+                        try { Process.Start("ms-settings:defaultapps"); } catch { }
                         return;
                     }
                     else if (command == "generate" || command == "generate-shortcuts")
@@ -290,10 +296,36 @@ namespace FastBrowserSwitch
             {
                 sw.Stop();
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("\n[!] Notice: Windows User Choice Protection Driver (UCPD) is active.");
-                Console.WriteLine("    UCPD blocks programmatic registry writes to browser defaults.");
-                Console.WriteLine("    -> Fix: Run 'Unlock-FastSwitch.cmd' once as Administrator to permanently allow 10ms switching.");
-                Console.WriteLine("    -> Opening Windows Default Apps settings dialog as fallback...");
+                Console.WriteLine("\n[!] Notice: Windows User Choice Protection Driver (UCPD) is active in RAM.");
+                
+                int startVal = -1;
+                try
+                {
+                    using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\UCPD"))
+                    {
+                        if (key != null)
+                        {
+                            object obj = key.GetValue("Start");
+                            if (obj is int) startVal = (int)obj;
+                        }
+                    }
+                }
+                catch { }
+
+                if (startVal == 4)
+                {
+                    Console.WriteLine("    [OK] Service is already DISABLED in registry (Unlock script succeeded).");
+                    Console.WriteLine("    [!] A single PC REBOOT is required to unload UCPD from active memory.");
+                    Console.WriteLine("    -> Once you restart, all 1-click batch files and the BIOS selector");
+                    Console.WriteLine("       will switch default browsers in under 15ms permanently!");
+                }
+                else
+                {
+                    Console.WriteLine("    UCPD blocks programmatic registry writes to browser defaults.");
+                    Console.WriteLine("    -> Fix: Right-click 'Unlock-FastSwitch.cmd' -> Run as Administrator, then restart PC.");
+                }
+
+                Console.WriteLine("    -> Opening Windows Default Apps settings dialog as temporary fallback...");
                 Console.ResetColor();
 
                 try
@@ -624,8 +656,8 @@ if %errorlevel% neq 0 (
                                 else
                                 {
                                     try { Console.Beep(400, 150); } catch { }
-                                    statusMsg = "[!] UCPD Locked: Run 'Unlock-FastSwitch.cmd' as Admin!";
-                                    statusColor = ConsoleColor.Red;
+                                    statusMsg = "[!] UCPD active in RAM. Reboot required or use Settings!";
+                                    statusColor = ConsoleColor.Yellow;
                                 }
                             }
                             break;
@@ -740,9 +772,19 @@ if %errorlevel% neq 0 (
 
         private static void CheckAndExplainUcpd()
         {
-            Console.WriteLine("[*] Checking User Choice Protection Driver (UCPD) status...");
+            Console.WriteLine("[*] Checking User Choice Protection Driver (UCPD) status...\n");
             try
             {
+                int startVal = -1;
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\UCPD"))
+                {
+                    if (key != null)
+                    {
+                        object obj = key.GetValue("Start");
+                        if (obj is int) startVal = (int)obj;
+                    }
+                }
+
                 var psi = new ProcessStartInfo("sc.exe", "query ucpd")
                 {
                     RedirectStandardOutput = true,
@@ -753,17 +795,31 @@ if %errorlevel% neq 0 (
                 string output = p.StandardOutput.ReadToEnd();
                 p.WaitForExit();
 
-                if (output.Contains("RUNNING"))
+                bool isRunning = output.Contains("RUNNING");
+
+                if (startVal == 4 && isRunning)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("[!] UCPD service is RUNNING. It blocks direct registry changes.");
-                    Console.WriteLine("[!] Run 'Unlock-FastSwitch.cmd' as Administrator to disable it permanently.");
+                    Console.WriteLine("[!] STATUS: Reboot Pending to Finalize Unlock!");
+                    Console.WriteLine("    1. UCPD startup is DISABLED in registry (Success).");
+                    Console.WriteLine("    2. The driver is still in RAM because Windows cannot unload kernel filters live.");
+                    Console.WriteLine("    -> Simply RESTART your PC once to unload it.");
+                    Console.WriteLine("    -> After restart, 10ms switching will be permanently active!");
+                    Console.ResetColor();
+                }
+                else if (isRunning)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("[!] STATUS: UCPD is ACTIVE.");
+                    Console.WriteLine("    It blocks programmatic registry writes to browser defaults.");
+                    Console.WriteLine("    -> Run 'Unlock-FastSwitch.cmd' as Administrator to disable it.");
                     Console.ResetColor();
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("[+] UCPD service is NOT active. 10ms instant switching is ENABLED!");
+                    Console.WriteLine("[+] STATUS: UCPD is UNLOADED / NOT RUNNING!");
+                    Console.WriteLine("    Instant <15ms default browser switching is ENABLED and ACTIVE!");
                     Console.ResetColor();
                 }
             }
